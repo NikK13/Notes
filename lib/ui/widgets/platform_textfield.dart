@@ -11,6 +11,7 @@ class PlatformTextField extends StatelessWidget {
   final int? minLines;
   final String? hintText;
   final bool? enabled;
+  final bool? isForNotes;
 
   const PlatformTextField({
     Key? key,
@@ -20,6 +21,7 @@ class PlatformTextField extends StatelessWidget {
     this.maxLines, this.minLines,
     this.inputType = TextInputType.name,
     this.isExpanded = false, this.enabled,
+    this.isForNotes = false
   }) : super(key: key);
 
   @override
@@ -58,9 +60,10 @@ class PlatformTextField extends StatelessWidget {
           ),
           fillColor: Colors.white,
           filled: true,
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+          prefixIcon: isForNotes! ? null :
+          const Icon(Icons.search, color: Colors.grey),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(isForNotes! ? 8 : 30),
             borderSide: BorderSide(
               width:
               Theme.of(context).brightness == Brightness.dark ? 0 : 0.5,
@@ -68,7 +71,7 @@ class PlatformTextField extends StatelessWidget {
             ),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(isForNotes! ? 8 : 30),
             borderSide: BorderSide(
               width:
               Theme.of(context).brightness == Brightness.dark ? 0 : 0.5,
@@ -90,14 +93,14 @@ class PlatformTextField extends StatelessWidget {
       ),
       textAlignVertical: TextAlignVertical.top,
       textCapitalization: TextCapitalization.sentences,
-      prefix: const Padding(
+      prefix: isForNotes! ? null : const Padding(
         padding: EdgeInsets.only(left: 6),
         child: Icon(Icons.search, color: Colors.grey),
       ),
       suffix: showClear ? Padding(
         padding: const EdgeInsets.only(right: 8),
         child: GestureDetector(
-          child: const Icon(CupertinoIcons.clear),
+          child: const Icon(CupertinoIcons.clear, color: Colors.grey),
           onTap: (){
             controller.clear();
             FocusScope.of(context).unfocus();

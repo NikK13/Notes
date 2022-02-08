@@ -6,6 +6,7 @@ import 'package:notes/data/utils/app.dart';
 import 'package:notes/data/utils/appnavigator.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
+import 'package:notes/ui/bloc/notes_bloc.dart';
 import 'package:notes/ui/provider/prefsprovider.dart';
 import 'package:notes/ui/widgets/appbar.dart';
 import 'package:notes/ui/widgets/settings_row.dart';
@@ -13,8 +14,13 @@ import 'package:provider/provider.dart';
 
 class SettingsPage extends StatefulWidget {
   final Function? reloadDesign;
+  final NotesBloc? notesBloc;
 
-  const SettingsPage({Key? key, this.reloadDesign}) : super(key: key);
+  const SettingsPage({
+    Key? key,
+    this.reloadDesign,
+    this.notesBloc,
+  }) : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -29,9 +35,8 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 24,
+          padding: const EdgeInsets.only(
+            right: 16, left: 16, top: 24
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -66,7 +71,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 SettingsTitle(
                   title: AppLocalizations.of(context, 'appearance'),
                 ),
-                SettingsRow(
+                /*SettingsRow(
                   title: AppLocalizations.of(context, 'labels'),
                   onTap: () => changeLabelsValue(
                     _provider,
@@ -79,7 +84,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     onChanged: (bool value) => changeLabelsValue(_provider, value),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 8),*/
                 SettingsRow(
                   title: AppLocalizations.of(context, 'appcolor'),
                   onTap: () => showColorDialog(context, _provider),
@@ -102,6 +107,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: AppLocalizations.of(context, 'app'),
                 ),
                 SettingsRow(
+                  title: "Clear database",
+                  onTap: () async{
+                    await widget.notesBloc!.deleteAllItems();
+                  },
+                  trailing: "Delete all saved notes",
+                  icon: Icons.delete_outline,
+                ),
+                SettingsRow(
                   title: "${App.appName}, v1.0a",
                   onTap: () {
                     if(kDebugMode){
@@ -112,6 +125,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   trailing: App.platform.capitalize(),
                   icon: Icons.help_outline,
                 ),
+                const SizedBox(height: 24),
               ],
             ),
           ),

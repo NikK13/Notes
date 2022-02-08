@@ -10,7 +10,7 @@ class App {
   //static const platform = "ios";
   static String platform = defaultTargetPlatform.name;
   static const Color colorDark = Color(0xFF212121);
-  static const Color colorLight = Color(0xFFF8F8F8);
+  static const Color colorLight = Color(0xFFFFFFFF);
   static const String defColor = "3164FF";
   static const String font = "Manrope";
 

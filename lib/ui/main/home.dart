@@ -1,11 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:notes/data/model/note.dart';
 import 'package:notes/data/utils/app.dart';
 import 'package:notes/data/utils/appnavigator.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
+import 'package:notes/ui/bloc/notes_bloc.dart';
 import 'package:notes/ui/main/settings.dart';
+import 'package:notes/ui/notes/simple_note.dart';
 import 'package:notes/ui/provider/prefsprovider.dart';
+import 'package:notes/ui/widgets/loading.dart';
+import 'package:notes/ui/widgets/nodata.dart';
 import 'package:notes/ui/widgets/platform_textfield.dart';
 import 'package:provider/provider.dart';
 
@@ -18,8 +24,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _searchController = TextEditingController();
+  final _notesBloc = NotesBloc();
 
-  void Function(void Function())? _setSearchState;
+  void Function(void Function())? _setSearchState, _setListState;
 
   String _filter = '';
 
@@ -28,6 +35,7 @@ class _HomePageState extends State<HomePage> {
     _searchController.addListener(() {
       _setSearchState!(() {
         _filter = _searchController.text;
+        _setListState!((){});
       });
     });
     super.initState();
@@ -40,42 +48,7 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
-        floatingActionButtonLocation: App.platform == "ios" ?
-        FloatingActionButtonLocation.centerFloat :
-        FloatingActionButtonLocation.endFloat,
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(
-            bottom: 12
-          ),
-          child: App.platform == "ios" ? FloatingActionButton(
-            onPressed: (){},
-            backgroundColor: HexColor.fromHex(provider.color!),
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 28,
-            ),
-          ) : FloatingActionButton.extended(
-            onPressed: (){},
-            backgroundColor: HexColor.fromHex(provider.color!),
-            label: Row(
-              children: [
-                const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  AppLocalizations.of(context, 'create'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
+        resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.only(
@@ -88,9 +61,9 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      AppLocalizations.of(context, 'explore'),
+                      AppLocalizations.of(context, 'notes'),
                       style: const TextStyle(
-                        fontSize: 32,
+                        fontSize: 30,
                         fontWeight: FontWeight.w700
                       ),
                     ),
@@ -98,11 +71,13 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         GestureDetector(
                           onTap: (){
-
+                            AppNavigator.of(context).push(
+                              SimpleNotePage(notesBloc: _notesBloc)
+                            );
                           },
                           child: Icon(
-                            CupertinoIcons.arrow_down_doc,
-                            size: 30,
+                            CupertinoIcons.add_circled,
+                            size: 32,
                             color: HexColor.fromHex(provider.color!),
                           ),
                         ),
@@ -111,6 +86,7 @@ class _HomePageState extends State<HomePage> {
                           onTap: (){
                             AppNavigator.of(context).push(SettingsPage(
                               reloadDesign: _reloadDesign,
+                              notesBloc: _notesBloc,
                             ));
                           },
                           child: Icon(
@@ -134,12 +110,64 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                 ),
+                Expanded(
+                  child: StreamBuilder(
+                    stream: _notesBloc.listStream,
+                    builder: (context, AsyncSnapshot<List<Note>?> snapshot) {
+                      //debugPrint("${snapshot.data}");
+                      if(snapshot.connectionState == ConnectionState.active){
+                        if(snapshot.hasData){
+                          if(snapshot.data!.isNotEmpty){
+                            final list = snapshot.data;
+                            list!.sort((a,b){
+                              return b.date!.compareTo(a.date!);
+                            });
+                            return Column(
+                              children: [
+                                const SizedBox(height: 24),
+                                Expanded(
+                                  child: StatefulBuilder(
+                                    builder: (_, setItem){
+                                      _setListState = setItem;
+                                      return StaggeredGridView.countBuilder(
+                                        physics: const BouncingScrollPhysics(),
+                                        crossAxisCount: 2,
+                                        itemCount: getSearchList(list).length,
+                                        shrinkWrap: true,
+                                        itemBuilder: (BuildContext context, int index) {
+                                          final item = getSearchList(list)[index];
+                                          return NoteItem(note: item, notesBloc: _notesBloc);
+                                        },
+                                        staggeredTileBuilder: (int index) => StaggeredTile.count(
+                                          (index + 1) % 3 == 0 ? 2 : 1, 1
+                                        ),
+                                        crossAxisSpacing: 12.0, mainAxisSpacing: 12.0,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                          return const NoDataPage();
+                        }
+                        return const NoDataPage();
+                      }
+                      return Center(child: LoadingView(color: HexColor.fromHex(provider.color!)));
+                    }
+                  ),
+                )
               ],
             ),
           ),
         )
       ),
     );
+  }
+
+  List<Note> getSearchList(List<Note> currentList){
+    return _filter.isEmpty ? currentList :
+      currentList.where((element) => element.title!.contains(_filter)).toList();
   }
 
   void _reloadDesign(){

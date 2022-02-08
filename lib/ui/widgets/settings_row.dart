@@ -27,9 +27,9 @@ class SettingsRow extends StatelessWidget {
     final provider = Provider.of<PreferenceProvider>(context);
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16)
+        borderRadius: BorderRadius.circular(16),
       ),
-      elevation: 4,
+      elevation: 5,
       child: Ripple(
         radius: 16,
         rippleColor: Theme.of(context).brightness == Brightness.dark ?

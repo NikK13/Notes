@@ -9,12 +9,15 @@ class LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return App.platform == "ios"
-    ?
-    const CupertinoActivityIndicator()
-    :
-    CircularProgressIndicator(
-      valueColor: AlwaysStoppedAnimation(color!),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 55),
+      child: App.platform == "ios"
+      ?
+      const CupertinoActivityIndicator()
+      :
+      CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation(color!),
+      ),
     );
   }
 }
