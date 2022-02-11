@@ -9,6 +9,39 @@ Color getThemedBackgroundColor(BuildContext context){
 
 Color accent(context) => Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white;
 
+Widget getIconButton({required Widget child, required BuildContext context, Function()? onTap, Color? color}) => InkWell(
+  child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.0),
+        color: color ?? (Theme.of(context).brightness == Brightness.light ?
+        const Color.fromRGBO(255, 255, 255, 1) : Colors.black26),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15), //color of shadow
+            spreadRadius: Theme.of(context).brightness == Brightness.light ? 2 : 0, //spread radius
+            blurRadius: Theme.of(context).brightness == Brightness.light ? 4 : 2, // blur radius
+            offset: Theme.of(context).brightness == Brightness.light ?
+              const Offset(2, 3) : const Offset(0, 0)
+          )
+        ]
+      ),
+      padding: const EdgeInsets.all(8.0),
+      child: child),
+  onTap: onTap,
+);
+
+Widget get dialogLine => Center(
+  child: Container(
+    margin: const EdgeInsets.only(top: 2.0, bottom: 4.0),
+    height: 4.0,
+    width: 24.0,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(6.0),
+      color: Colors.grey.withOpacity(0.3)
+    ),
+  ),
+);
+
 void showSnackBar(context, text) {
   final isLight = Theme.of(context).brightness == Brightness.light;
   ScaffoldMessenger.of(context).showSnackBar(
@@ -28,6 +61,32 @@ void showSnackBar(context, text) {
       ),
     ),
   );
+}
+
+int getIndexByPriority(String priority){
+  switch(priority){
+    case 'low':
+      return 0;
+    case 'medium':
+      return 1;
+    case 'high':
+      return 2;
+    default:
+      return 0;
+  }
+}
+
+String getPriorityByIndex(int index){
+  switch(index){
+    case 0:
+      return 'low';
+    case 1:
+      return 'medium';
+    case 2:
+      return 'high';
+    default:
+      return 'low';
+  }
 }
 
 extension StringExtension on String {

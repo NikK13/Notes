@@ -2,27 +2,32 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:notes/ui/bloc/notes_bloc.dart';
+import 'package:notes/ui/dialogs/create_simple_note.dart';
 import 'package:notes/ui/notes/simple_note.dart';
 import 'package:notes/ui/widgets/ripple.dart';
 
 class Item{
   String? title;
+  String? desc;
   bool? isDone;
 
   Item({
     this.title,
     this.isDone,
+    this.desc
   });
 
   static Map<String, dynamic> toMap(Item item) => {
     "title": item.title,
-    "isDone": item.isDone
+    "isDone": item.isDone,
+    "desc": item.desc
   };
 
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
       title: json['title'],
-      isDone: json['isDone']
+      isDone: json['isDone'],
+      desc: json['desc']
     );
   }
 }
@@ -82,9 +87,8 @@ class Note{
 
 class NoteItem extends StatelessWidget {
   final Note? note;
-  final NotesBloc? notesBloc;
 
-  const NoteItem({Key? key, this.note, this.notesBloc}) : super(key: key);
+  const NoteItem({Key? key, this.note}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -92,12 +96,17 @@ class NoteItem extends StatelessWidget {
       tag: note!,
       child: Ripple(
         onTap: (){
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) => SimpleNotePage(notesBloc: notesBloc, note: note),
-              transitionDuration: const Duration(milliseconds: 250),
+          showModalBottomSheet(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16)
+              )
             ),
+            context: context,
+            isScrollControlled: true,
+            isDismissible: false,
+            builder: (context) => CreateSimpleNoteDialog(note: note!)
           );
         },
         radius: 16,
@@ -125,6 +134,7 @@ class NoteItem extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.start,
+                  maxLines: 2,
                 ),
                 const SizedBox(height: 8),
                 Expanded(

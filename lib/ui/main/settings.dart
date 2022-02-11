@@ -114,6 +114,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   trailing: "Delete all saved notes",
                   icon: Icons.delete_outline,
                 ),
+                const SizedBox(height: 8),
                 SettingsRow(
                   title: "${App.appName}, v1.0a",
                   onTap: () {

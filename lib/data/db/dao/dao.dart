@@ -64,7 +64,10 @@ class DaoOfDB {
         "title": note.title,
         "desc": note.desc,
         "date": DateTime.now().millisecondsSinceEpoch,
-        "category": note.category
+        "category": note.category,
+        "priority": note.priority,
+        "image": note.image,
+        "items": Note.encodeItems(note.items!),
       },
       where: 'id = ?',
       whereArgs: [note.id]

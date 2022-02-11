@@ -5,6 +5,7 @@ import '../../data/utils/app.dart';
 class PlatformTextField extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType inputType;
+  final TextInputAction inputAction;
   final bool showClear;
   final bool isExpanded;
   final int? maxLines;
@@ -20,6 +21,7 @@ class PlatformTextField extends StatelessWidget {
     this.hintText,
     this.maxLines, this.minLines,
     this.inputType = TextInputType.name,
+    this.inputAction = TextInputAction.done,
     this.isExpanded = false, this.enabled,
     this.isForNotes = false
   }) : super(key: key);
@@ -34,7 +36,7 @@ class PlatformTextField extends StatelessWidget {
           color: Colors.black,
         ),
         keyboardType: inputType,
-        textInputAction: TextInputAction.done,
+        textInputAction: inputAction,
         enabled: enabled,
         expands: isExpanded,
         maxLines: maxLines,
@@ -111,7 +113,7 @@ class PlatformTextField extends StatelessWidget {
       minLines: minLines,
       expands: isExpanded,
       keyboardType: inputType,
-      textInputAction: TextInputAction.done,
+      textInputAction: inputAction,
       controller: controller,
       placeholder: hintText,
       placeholderStyle: const TextStyle(

@@ -7,14 +7,15 @@ import 'package:notes/data/utils/appnavigator.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
 import 'package:notes/ui/bloc/notes_bloc.dart';
+import 'package:notes/ui/dialogs/note_type_dialog.dart';
 import 'package:notes/ui/main/settings.dart';
-import 'package:notes/ui/notes/simple_note.dart';
 import 'package:notes/ui/provider/prefsprovider.dart';
 import 'package:notes/ui/widgets/loading.dart';
 import 'package:notes/ui/widgets/nodata.dart';
 import 'package:notes/ui/widgets/platform_textfield.dart';
 import 'package:provider/provider.dart';
 
+late NotesBloc notesBloc;
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -24,7 +25,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _searchController = TextEditingController();
-  final _notesBloc = NotesBloc();
 
   void Function(void Function())? _setSearchState, _setListState;
 
@@ -38,6 +38,7 @@ class _HomePageState extends State<HomePage> {
         _setListState!((){});
       });
     });
+    notesBloc = NotesBloc();
     super.initState();
   }
 
@@ -71,8 +72,19 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         GestureDetector(
                           onTap: (){
-                            AppNavigator.of(context).push(
+                            /*AppNavigator.of(context).push(
                               SimpleNotePage(notesBloc: _notesBloc)
+                            );*/
+                            showModalBottomSheet(
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(16),
+                                  topRight: Radius.circular(16)
+                                )
+                              ),
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) => const NoteTypeDialog()
                             );
                           },
                           child: Icon(
@@ -86,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                           onTap: (){
                             AppNavigator.of(context).push(SettingsPage(
                               reloadDesign: _reloadDesign,
-                              notesBloc: _notesBloc,
+                              notesBloc: notesBloc,
                             ));
                           },
                           child: Icon(
@@ -112,7 +124,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Expanded(
                   child: StreamBuilder(
-                    stream: _notesBloc.listStream,
+                    stream: notesBloc.listStream,
                     builder: (context, AsyncSnapshot<List<Note>?> snapshot) {
                       //debugPrint("${snapshot.data}");
                       if(snapshot.connectionState == ConnectionState.active){
@@ -136,7 +148,7 @@ class _HomePageState extends State<HomePage> {
                                         shrinkWrap: true,
                                         itemBuilder: (BuildContext context, int index) {
                                           final item = getSearchList(list)[index];
-                                          return NoteItem(note: item, notesBloc: _notesBloc);
+                                          return NoteItem(note: item);
                                         },
                                         staggeredTileBuilder: (int index) => StaggeredTile.count(
                                           (index + 1) % 3 == 0 ? 2 : 1, 1

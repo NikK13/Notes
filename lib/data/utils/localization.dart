@@ -43,6 +43,13 @@ class AppLocalizations {
       "add": "Add note",
       "editnote": "Edit note",
       "lastedit": "Last edited",
+      "simple_note": "Simple note",
+      "shop_note": "Shop item list",
+      "task_note": "Tasks list",
+      "priority": "Priority",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
     },
     'ru':{
       'start': "Начать",
@@ -77,6 +84,13 @@ class AppLocalizations {
       "add": "Добавить",
       "editnote": "Изменить заметку",
       "lastedit": "Изменено",
+      "simple_note": "Обычная заметка",
+      "shop_note": "Список покупок",
+      "task_note": "Список задач",
+      "priority": "Приоритет",
+      "low": "Низкий",
+      "medium": "Средний",
+      "high": "Высокий"
     },
   };
 
