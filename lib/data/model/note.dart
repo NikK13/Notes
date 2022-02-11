@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:notes/ui/bloc/notes_bloc.dart';
+import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/ui/dialogs/create_simple_note.dart';
-import 'package:notes/ui/notes/simple_note.dart';
+import 'package:notes/ui/dialogs/create_task_note.dart';
 import 'package:notes/ui/widgets/ripple.dart';
+import 'package:notes/ui/widgets/selected_checkbox.dart';
 
 class Item{
   String? title;
@@ -103,10 +104,18 @@ class NoteItem extends StatelessWidget {
                 topRight: Radius.circular(16)
               )
             ),
+            constraints: getDialogConstraints(context),
             context: context,
             isScrollControlled: true,
             isDismissible: false,
-            builder: (context) => CreateSimpleNoteDialog(note: note!)
+            builder: (context){
+              if(note!.category! == "default"){
+                return CreateSimpleNoteDialog(note: note!);
+              }
+              else{
+                return CreateTaskNoteDialog(note: note!);
+              }
+            }
           );
         },
         radius: 16,
@@ -120,23 +129,38 @@ class NoteItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(16)
           ),
           child: Padding(
-            padding: const EdgeInsets.only(
+            padding: EdgeInsets.only(
               left: 16, right: 16,
-              top: 16, bottom: 8
+              top: 16, bottom: note!.category! == "default" ? 8 :
+                (note!.category! == "tasks") ? 10 : 8
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  note!.title!,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.start,
-                  maxLines: 2,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        note!.title!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.start,
+                        maxLines: 1,
+                      ),
+                    ),
+                    /*Container(
+                      width: 16, height: 16,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: getColorByPriority(note!.priority!)
+                      ),
+                    )*/
+                  ],
                 ),
                 const SizedBox(height: 8),
+                if(note!.category! == "default")
                 Expanded(
                   child: Text(
                     note!.desc!,
@@ -147,11 +171,50 @@ class NoteItem extends StatelessWidget {
                     ),
                     textAlign: TextAlign.start,
                   ),
-                )
+                ),
+                if(note!.category! == "tasks")
+                Expanded(
+                  child: ListView(
+                    //physics: const NeverScrollableScrollPhysics(),
+                    children: note!.items!.asMap().map((index, value){
+                      final item = note!.items![index];
+                      return MapEntry(index, getTaskView(item));
+                    }).values.toList(),
+                  )
+                ),
               ],
             )
           ),
         ),
+      ),
+    );
+  }
+
+  Widget getTaskView(Item item){
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 2
+      ),
+      child: Row(
+        children: [
+          SelectedCheckBox(
+            isSelected: item.isDone,
+            onTap: (){},
+            size: 14,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              item.title!,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+              maxLines: 1,
+            ),
+          )
+        ],
       ),
     );
   }

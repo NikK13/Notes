@@ -76,6 +76,24 @@ int getIndexByPriority(String priority){
   }
 }
 
+Color? getColorByPriority(String priority){
+  switch(priority){
+    case "low":
+      return Colors.greenAccent.shade700;
+    case "medium":
+      return Colors.amber;
+    case "high":
+      return Colors.red;
+    default:
+      return Colors.amber;
+  }
+}
+BoxConstraints getDialogConstraints(BuildContext context){
+  return BoxConstraints(
+    maxHeight: MediaQuery.of(context).size.height * 0.95
+  );
+}
+
 String getPriorityByIndex(int index){
   switch(index){
     case 0:

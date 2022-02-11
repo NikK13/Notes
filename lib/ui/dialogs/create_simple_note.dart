@@ -47,153 +47,155 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<PreferenceProvider>(context);
-    return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topRight: Radius.circular(16),
-          topLeft: Radius.circular(16)
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom
+    return SafeArea(
+      child: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(16),
+            topLeft: Radius.circular(16)
           ),
-          child: SingleChildScrollView(
-            child: Wrap(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      dialogLine,
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          if(widget.note != null)
-                          getIconButton(
-                            child: const Icon(
-                              Icons.delete_outline_rounded,
-                              size: 24,
-                              color: Colors.grey,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom
+            ),
+            child: SingleChildScrollView(
+              child: Wrap(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        dialogLine,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if(widget.note != null)
+                            getIconButton(
+                              child: const Icon(
+                                Icons.delete_outline_rounded,
+                                size: 24,
+                                color: Colors.grey,
+                              ),
+                              context: context,
+                              onTap: () async{
+                                await notesBloc.deleteItemByID(widget.note!.id!);
+                                Navigator.pop(context);
+                              }
                             ),
-                            context: context,
-                            onTap: () async{
-                              await notesBloc.deleteItemByID(widget.note!.id!);
-                              Navigator.pop(context);
-                            }
-                          ),
-                          if(widget.note == null)
-                          const SizedBox(width: 40),
-                          Text(
-                            AppLocalizations.of(context, 'simple_note'),
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                            if(widget.note == null)
+                            const SizedBox(width: 40),
+                            Text(
+                              AppLocalizations.of(context, 'simple_note'),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          getIconButton(
-                            child: const Icon(
-                              Icons.close,
-                              size: 24,
-                              color: Colors.grey,
+                            getIconButton(
+                              child: const Icon(
+                                Icons.close,
+                                size: 24,
+                                color: Colors.grey,
+                              ),
+                              context: context,
+                              onTap: () {
+                                Navigator.pop(context);
+                              }
                             ),
-                            context: context,
-                            onTap: () {
-                              Navigator.pop(context);
-                            }
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 32),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context, 'priority'),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 32),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(context, 'priority'),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700
+                                  ),
                                 ),
+                                const SizedBox(height: 4),
+                                StatefulBuilder(
+                                  builder: (_, setItem){
+                                    _setIndexState = setItem;
+                                    return SingleChildScrollView(
+                                      child: ChipsList(
+                                        index: _selectedIndex,
+                                        color: getColorByPriority(getPriorityByIndex(_selectedIndex)),
+                                        func: (selected, index) {
+                                          _setIndexState!((){
+                                            if (selected) {
+                                              _selectedIndex = index;
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 32),
+                              ],
+                            ),
+                            Text(
+                              AppLocalizations.of(context, 'title'),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700
                               ),
-                              const SizedBox(height: 4),
-                              StatefulBuilder(
-                                builder: (_, setItem){
-                                  _setIndexState = setItem;
-                                  return SingleChildScrollView(
-                                    child: ChipsList(
-                                      index: _selectedIndex,
-                                      color: HexColor.fromHex(provider.color!),
-                                      func: (selected, index) {
-                                        _setIndexState!((){
-                                          if (selected) {
-                                            _selectedIndex = index;
-                                          }
-                                        });
-                                      },
-                                    ),
-                                  );
-                                },
+                            ),
+                            const SizedBox(height: 8),
+                            PlatformTextField(
+                              controller: _titleController,
+                              showClear: false,
+                              isForNotes: true,
+                              maxLines: 1,
+                              hintText: AppLocalizations.of(context, 'typehint')
+                            ),
+                            const SizedBox(height: 32),
+                            Text(
+                              AppLocalizations.of(context, 'desc'),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700
                               ),
-                              const SizedBox(height: 32),
-                            ],
-                          ),
-                          Text(
-                            AppLocalizations.of(context, 'title'),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          PlatformTextField(
-                            controller: _titleController,
-                            showClear: false,
-                            isForNotes: true,
-                            maxLines: 1,
-                            hintText: AppLocalizations.of(context, 'typehint')
-                          ),
-                          const SizedBox(height: 32),
-                          Text(
-                            AppLocalizations.of(context, 'desc'),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700
+                            const SizedBox(height: 8),
+                            PlatformTextField(
+                              controller: _descController,
+                              isForNotes: true,
+                              showClear: false,
+                              minLines: 5,
+                              maxLines: 5,
+                              hintText: AppLocalizations.of(context, 'typehint'),
+                              isExpanded: false,
+                              inputAction: TextInputAction.newline,
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          PlatformTextField(
-                            controller: _descController,
-                            isForNotes: true,
-                            showClear: false,
-                            minLines: 5,
-                            maxLines: 5,
-                            hintText: AppLocalizations.of(context, 'typehint'),
-                            isExpanded: false,
-                            inputAction: TextInputAction.newline,
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: PlatformButton(
-                              fontSize: 20,
-                              onPressed: () async =>
-                              widget.note != null ?
-                              await _updateNote() :
-                              await _createNewNote(),
-                              text: widget.note == null ?
-                              AppLocalizations.of(context, 'add') :
-                              AppLocalizations.of(context, 'save'),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: PlatformButton(
+                                fontSize: 20,
+                                onPressed: () async =>
+                                widget.note != null ?
+                                await _updateNote() :
+                                await _createNewNote(),
+                                text: widget.note == null ?
+                                AppLocalizations.of(context, 'add') :
+                                AppLocalizations.of(context, 'save'),
+                              ),
                             ),
-                          ),
-                        ],
-                      )
-                    ],
+                          ],
+                        )
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

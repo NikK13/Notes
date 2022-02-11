@@ -49,7 +49,8 @@ class AppLocalizations {
       "priority": "Priority",
       "low": "Low",
       "medium": "Medium",
-      "high": "High"
+      "high": "High",
+      "tasks": "Tasks"
     },
     'ru':{
       'start': "Начать",
@@ -90,7 +91,8 @@ class AppLocalizations {
       "priority": "Приоритет",
       "low": "Низкий",
       "medium": "Средний",
-      "high": "Высокий"
+      "high": "Высокий",
+      "tasks": "Задачи"
     },
   };
 
