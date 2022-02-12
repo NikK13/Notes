@@ -67,13 +67,6 @@ class NoteTypeDialog extends StatelessWidget {
                     },
                   ),
                   NewNoteItem(
-                    image: "assets/images/undraw_cart.svg",
-                    title: AppLocalizations.of(context, 'shop_note'),
-                    onTap: (){
-
-                    },
-                  ),
-                  NewNoteItem(
                     image: "assets/images/undraw_task.svg",
                     title: " ${AppLocalizations.of(context, 'task_note')}",
                     onTap: (){
@@ -91,6 +84,33 @@ class NoteTypeDialog extends StatelessWidget {
                         isDismissible: false,
                         builder: (context) => const CreateTaskNoteDialog()
                       );
+                      /*showModalBottomSheet(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
+                        isScrollControlled: true,
+                        isDismissible: true,
+                        context: context,
+                        builder: (context) => DraggableScrollableSheet(
+                          initialChildSize: 0.75,
+                          minChildSize: 0.5,
+                          maxChildSize: 0.95,
+                          expand: false,
+                          snap: true,
+                          builder: (context, scrollController) {
+                            return CreateTaskNoteDialog(
+                              controller: scrollController,
+                            );
+                          },
+                        ),
+                      );*/
+                    },
+                  ),
+                  NewNoteItem(
+                    image: "assets/images/undraw_cart.svg",
+                    title: AppLocalizations.of(context, 'shop_note'),
+                    onTap: (){
+
                     },
                   ),
                 ],

@@ -72,9 +72,6 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         GestureDetector(
                           onTap: (){
-                            /*AppNavigator.of(context).push(
-                              SimpleNotePage(notesBloc: _notesBloc)
-                            );*/
                             showModalBottomSheet(
                               shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.only(
@@ -88,12 +85,12 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                           child: Icon(
-                            CupertinoIcons.add_circled,
-                            size: 32,
+                            App.platform == "ios" ? CupertinoIcons.add_circled : Icons.add,
+                            size: App.platform == "ios" ? 32 : 38,
                             color: HexColor.fromHex(provider.color!),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 18),
                         GestureDetector(
                           onTap: (){
                             AppNavigator.of(context).push(SettingsPage(
@@ -142,7 +139,9 @@ class _HomePageState extends State<HomePage> {
                                     builder: (_, setItem){
                                       _setListState = setItem;
                                       return StaggeredGridView.countBuilder(
-                                        physics: const BouncingScrollPhysics(),
+                                        physics: App.platform == "ios" ?
+                                        const BouncingScrollPhysics() :
+                                        const AlwaysScrollableScrollPhysics(),
                                         crossAxisCount: 2,
                                         itemCount: getSearchList(list).length,
                                         shrinkWrap: true,

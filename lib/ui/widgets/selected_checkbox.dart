@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/ui/provider/prefsprovider.dart';
+import 'package:notes/ui/widgets/ripple.dart';
 import 'package:provider/provider.dart';
 
 class SelectedCheckBox extends StatelessWidget {
@@ -18,7 +19,8 @@ class SelectedCheckBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<PreferenceProvider>(context);
-    return InkWell(
+    return Ripple(
+      radius: 30,
       onTap: onTap,
       child: Container(
         width: size,
@@ -29,7 +31,7 @@ class SelectedCheckBox extends StatelessWidget {
           size: size / 2,
         ) : const SizedBox(),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(30),
           color: isSelected! ?
           HexColor.fromHex(provider.color!) :
           Colors.grey.shade300

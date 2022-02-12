@@ -50,7 +50,11 @@ class AppLocalizations {
       "low": "Low",
       "medium": "Medium",
       "high": "High",
-      "tasks": "Tasks"
+      "tasks": "Tasks",
+      "new_item": "New item",
+      "warning": "Warning",
+      "delete_note_dialog": "Do you want to delete note?",
+      "delete": "Delete"
     },
     'ru':{
       'start': "Начать",
@@ -92,7 +96,11 @@ class AppLocalizations {
       "low": "Низкий",
       "medium": "Средний",
       "high": "Высокий",
-      "tasks": "Задачи"
+      "tasks": "Задачи",
+      "new_item": "Новый предмет",
+      "warning": "Внимание",
+      "delete_note_dialog": "Вы действительно хотите\nудалить заметку?",
+      "delete": "Удалить"
     },
   };
 

@@ -20,6 +20,10 @@ class NotesBloc implements BaseBloc{
     as Future<List<Note>?>));
   }
 
+  Future<List<Note>?> fetchAllNotes() async{
+    return await (repository.getAllNotes());
+  }
+
   addItem(Note item) async {
     await repository.insertNote(item);
     await getAllNotes();

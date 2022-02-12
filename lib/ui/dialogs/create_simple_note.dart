@@ -1,15 +1,14 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:notes/data/model/note.dart';
+import 'package:notes/data/utils/app.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
+import 'package:notes/ui/dialogs/delete_note_dialog.dart';
 import 'package:notes/ui/main/home.dart';
-import 'package:notes/ui/provider/prefsprovider.dart';
 import 'package:notes/ui/widgets/chips_list.dart';
 import 'package:notes/ui/widgets/platform_button.dart';
 import 'package:notes/ui/widgets/platform_textfield.dart';
-import 'package:provider/provider.dart';
 
 class CreateSimpleNoteDialog extends StatefulWidget {
   final Note? note;
@@ -46,7 +45,6 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<PreferenceProvider>(context);
     return SafeArea(
       child: GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -60,6 +58,8 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
               bottom: MediaQuery.of(context).viewInsets.bottom
             ),
             child: SingleChildScrollView(
+              /*physics: App.platform == "ios" ? const BouncingScrollPhysics() :
+                const AlwaysScrollableScrollPhysics(),*/
               child: Wrap(
                 children: [
                   Padding(
@@ -79,8 +79,24 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
                               ),
                               context: context,
                               onTap: () async{
-                                await notesBloc.deleteItemByID(widget.note!.id!);
-                                Navigator.pop(context);
+                                showModalBottomSheet(
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16)
+                                    )
+                                  ),
+                                  context: context,
+                                  constraints: getDialogConstraints(context),
+                                  isScrollControlled: true,
+                                  isDismissible: false,
+                                  builder: (ctx) => DeleteNoteDialog(
+                                    deleteNote: () async {
+                                      await notesBloc.deleteItemByID(widget.note!.id!);
+                                      Navigator.pop(context);
+                                    },
+                                  )
+                                );
                               }
                             ),
                             if(widget.note == null)

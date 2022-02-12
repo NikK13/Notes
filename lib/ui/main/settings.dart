@@ -39,6 +39,8 @@ class _SettingsPageState extends State<SettingsPage> {
             right: 16, left: 16, top: 24
           ),
           child: SingleChildScrollView(
+            physics: App.platform == "ios" ? const BouncingScrollPhysics() :
+              const AlwaysScrollableScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -116,7 +118,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const SizedBox(height: 8),
                 SettingsRow(
-                  title: "${App.appName}, v1.0a",
+                  title: "${App.appName}, v 0.1.0",
                   onTap: () {
                     if(kDebugMode){
                       widget.reloadDesign!();

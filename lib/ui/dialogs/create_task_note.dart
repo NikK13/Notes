@@ -1,14 +1,16 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:notes/data/model/note.dart';
+import 'package:notes/data/utils/app.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
+import 'package:notes/ui/dialogs/delete_note_dialog.dart';
+import 'package:notes/ui/dialogs/new_item_dialog.dart';
 import 'package:notes/ui/main/home.dart';
 import 'package:notes/ui/provider/prefsprovider.dart';
 import 'package:notes/ui/widgets/chips_list.dart';
 import 'package:notes/ui/widgets/platform_button.dart';
 import 'package:notes/ui/widgets/platform_textfield.dart';
-import 'package:notes/ui/widgets/ripple.dart';
 import 'package:notes/ui/widgets/selected_checkbox.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +19,7 @@ class CreateTaskNoteDialog extends StatefulWidget {
 
   const CreateTaskNoteDialog({
     Key? key,
-    this.note
+    this.note,
   }) : super(key: key);
 
   @override
@@ -58,21 +60,33 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
     });
   }
 
+  createNewItemInList(String title, [String? desc]){
+    _setItemsState!((){
+      items.add(Item(
+        title: title,
+        desc: desc ?? "",
+        isDone: false
+      ));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<PreferenceProvider>(context);
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: SingleChildScrollView(
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(16),
-            topLeft: Radius.circular(16)
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(16),
+          topLeft: Radius.circular(16)
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom
           ),
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom
-            ),
+          child: SingleChildScrollView(
+            /*physics: App.platform == "ios" ? const BouncingScrollPhysics() :
+            const AlwaysScrollableScrollPhysics(),*/
             child: Wrap(
               children: [
                 Padding(
@@ -92,8 +106,24 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                               ),
                               context: context,
                               onTap: () async{
-                                await notesBloc.deleteItemByID(widget.note!.id!);
-                                Navigator.pop(context);
+                                showModalBottomSheet(
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16)
+                                    )
+                                  ),
+                                  context: context,
+                                  constraints: getDialogConstraints(context),
+                                  isScrollControlled: true,
+                                  isDismissible: false,
+                                  builder: (ctx) => DeleteNoteDialog(
+                                    deleteNote: () async{
+                                      await notesBloc.deleteItemByID(widget.note!.id!);
+                                      Navigator.pop(context);
+                                    },
+                                  )
+                                );
                               }
                             ),
                           if(widget.note == null)
@@ -182,13 +212,21 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                               ),
                               GestureDetector(
                                 onTap: (){
-                                  _setItemsState!((){
-                                    items.add(Item(
-                                      title: "New task ${items.length}",
-                                      desc: "",
-                                      isDone: false
-                                    ));
-                                  });
+                                  showModalBottomSheet(
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(16),
+                                        topRight: Radius.circular(16)
+                                      )
+                                    ),
+                                    context: context,
+                                    constraints: getDialogConstraints(context),
+                                    isScrollControlled: true,
+                                    isDismissible: false,
+                                    builder: (context) => NewItemDialog(
+                                      addNewItem: createNewItemInList,
+                                    )
+                                  );
                                 },
                                 child: Icon(
                                   Icons.add,
