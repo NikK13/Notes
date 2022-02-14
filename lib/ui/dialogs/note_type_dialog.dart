@@ -62,7 +62,9 @@ class NoteTypeDialog extends StatelessWidget {
                         constraints: getDialogConstraints(context),
                         isScrollControlled: true,
                         isDismissible: false,
-                        builder: (context) => const CreateSimpleNoteDialog()
+                        builder: (context) => const CreateSimpleNoteDialog(
+                          isFromImport: false,
+                        )
                       );
                     },
                   ),
@@ -82,7 +84,9 @@ class NoteTypeDialog extends StatelessWidget {
                         constraints: getDialogConstraints(context),
                         isScrollControlled: true,
                         isDismissible: false,
-                        builder: (context) => const CreateTaskNoteDialog()
+                        builder: (context) => const CreateTaskNoteDialog(
+                          isFromImport: false,
+                        )
                       );
                       /*showModalBottomSheet(
                         shape: RoundedRectangleBorder(
@@ -106,13 +110,13 @@ class NoteTypeDialog extends StatelessWidget {
                       );*/
                     },
                   ),
-                  NewNoteItem(
+                  /*NewNoteItem(
                     image: "assets/images/undraw_cart.svg",
                     title: AppLocalizations.of(context, 'shop_note'),
                     onTap: (){
 
                     },
-                  ),
+                  ),*/
                 ],
               ),
             ],

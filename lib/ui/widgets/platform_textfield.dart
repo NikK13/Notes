@@ -13,17 +13,20 @@ class PlatformTextField extends StatelessWidget {
   final String? hintText;
   final bool? enabled;
   final bool? isForNotes;
+  final Widget? customSuffix;
+  final Color? color;
 
   const PlatformTextField({
     Key? key,
     required this.controller,
     required this.showClear,
-    this.hintText,
+    this.hintText, this.color,
     this.maxLines, this.minLines,
     this.inputType = TextInputType.name,
     this.inputAction = TextInputAction.done,
     this.isExpanded = false, this.enabled,
-    this.isForNotes = false
+    this.isForNotes = false,
+    this.customSuffix
   }) : super(key: key);
 
   @override
@@ -46,7 +49,28 @@ class PlatformTextField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           isDense: true,
-          suffixIcon: showClear ? GestureDetector(
+          suffixIcon: customSuffix != null ?
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+              showClear ? GestureDetector(
+                child: Icon(
+                  CupertinoIcons.clear,
+                  color: color ?? Colors.black,
+                  size: 30,
+                ),
+                onTap: (){
+                  controller.clear();
+                  FocusScope.of(context).unfocus();
+                },
+              ) : const SizedBox(),
+              const SizedBox(width: 6),
+              customSuffix!
+            ]),
+          ) : (showClear ? GestureDetector(
             child: const Icon(
               CupertinoIcons.clear,
               color: Colors.black
@@ -55,7 +79,7 @@ class PlatformTextField extends StatelessWidget {
               controller.clear();
               FocusScope.of(context).unfocus();
             },
-          ) : const SizedBox(),
+          ) : const SizedBox()),
           hintStyle: const TextStyle(
             fontWeight: FontWeight.w400,
             color: Colors.grey,

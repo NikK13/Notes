@@ -7,7 +7,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 class App {
   static const String appName = "Notes";
-  //static const platform = "ios";
   static String platform = defaultTargetPlatform.name;
   static const Color colorDark = Color(0xFF212121);
   static const Color colorLight = Color(0xFFFFFFFF);
@@ -33,6 +32,7 @@ class App {
     fontSize: 16,
     color: Colors.white
   );
+
   static final textStyleBtnDark = TextStyle(
     fontSize: 16,
     color: Colors.green.shade700

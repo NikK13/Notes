@@ -6,6 +6,7 @@ import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
 import 'package:notes/ui/dialogs/delete_note_dialog.dart';
 import 'package:notes/ui/dialogs/new_item_dialog.dart';
+import 'package:notes/ui/dialogs/notes_menu_dialog.dart';
 import 'package:notes/ui/main/home.dart';
 import 'package:notes/ui/provider/prefsprovider.dart';
 import 'package:notes/ui/widgets/chips_list.dart';
@@ -16,10 +17,12 @@ import 'package:provider/provider.dart';
 
 class CreateTaskNoteDialog extends StatefulWidget {
   final Note? note;
+  final bool? isFromImport;
 
   const CreateTaskNoteDialog({
     Key? key,
     this.note,
+    this.isFromImport
   }) : super(key: key);
 
   @override
@@ -30,10 +33,11 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
   final TextEditingController _titleController = TextEditingController();
 
   Note get note => widget.note!;
+  bool get isImported => widget.isFromImport!;
 
   int _selectedIndex = 0;
 
-  void Function(void Function())? _setIndexState, _setActiveState, _setItemsState;
+  void Function(void Function())? _setIndexState, _setItemsState;
 
   List<Item> items = [];
 
@@ -97,37 +101,29 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          if(widget.note != null)
-                            getIconButton(
-                              child: const Icon(
-                                Icons.delete_outline_rounded,
-                                size: 24,
-                                color: Colors.grey,
-                              ),
-                              context: context,
-                              onTap: () async{
-                                showModalBottomSheet(
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      topRight: Radius.circular(16)
-                                    )
-                                  ),
-                                  context: context,
-                                  constraints: getDialogConstraints(context),
-                                  isScrollControlled: true,
-                                  isDismissible: false,
-                                  builder: (ctx) => DeleteNoteDialog(
-                                    deleteNote: () async{
-                                      await notesBloc.deleteItemByID(widget.note!.id!);
-                                      Navigator.pop(context);
-                                    },
-                                  )
-                                );
-                              }
+                          getIconButton(
+                            child: Icon(
+                              App.platform == "ios" ?
+                              Icons.arrow_back_ios_rounded :
+                              Icons.arrow_back,
+                              size: 24,
+                              color: Colors.grey,
                             ),
-                          if(widget.note == null)
-                          const SizedBox(width: 40),
+                            context: context,
+                            onTap: () async{
+                              final newNote = Note(
+                                title: note.title,
+                                desc: note.desc,
+                                category: note.category,
+                                priority: note.priority,
+                                image: note.image,
+                                items: note.items,
+                                date: note.date
+                              );
+                              await notesBloc.addItem(newNote);
+                              Navigator.pop(context);
+                            }
+                          ),
                           Text(
                             AppLocalizations.of(context, 'task_note'),
                             style: const TextStyle(
@@ -135,17 +131,56 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          if(isImported && widget.note != null)
                           getIconButton(
                             child: const Icon(
-                              Icons.close,
+                              Icons.save,
                               size: 24,
                               color: Colors.grey,
                             ),
                             context: context,
-                            onTap: () {
+                            onTap: () async{
+                              final newNote = Note(
+                                title: note.title,
+                                desc: note.desc,
+                                category: note.category,
+                                priority: note.priority,
+                                image: note.image,
+                                items: note.items,
+                                date: note.date
+                              );
+                              await notesBloc.addItem(newNote);
                               Navigator.pop(context);
                             }
                           ),
+                          if(!isImported && widget.note != null)
+                          getIconButton(
+                            child: const Icon(
+                              Icons.more_vert,
+                              size: 24,
+                              color: Colors.grey,
+                            ),
+                            context: context,
+                            onTap: (){
+                              showModalBottomSheet(
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    topRight: Radius.circular(16)
+                                  )
+                                ),
+                                context: context,
+                                constraints: getDialogConstraints(context),
+                                isScrollControlled: true,
+                                isDismissible: false,
+                                builder: (context) => NotesMenuDialog(
+                                  note: note,
+                                )
+                              );
+                            }
+                          ),
+                          if(widget.note == null)
+                          const SizedBox(width: 40)
                         ],
                       ),
                       Column(
@@ -171,11 +206,13 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                                       index: _selectedIndex,
                                       color: getColorByPriority(getPriorityByIndex(_selectedIndex)),
                                       func: (selected, index) {
-                                        _setIndexState!((){
-                                          if (selected) {
-                                            _selectedIndex = index;
-                                          }
-                                        });
+                                        if(!isImported){
+                                          _setIndexState!((){
+                                            if (selected) {
+                                              _selectedIndex = index;
+                                            }
+                                          });
+                                        }
                                       },
                                     ),
                                   );
@@ -197,6 +234,7 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                             showClear: false,
                             isForNotes: true,
                             maxLines: 1,
+                            enabled: !isImported,
                             hintText: AppLocalizations.of(context, 'typehint')
                           ),
                           const SizedBox(height: 32),
@@ -212,21 +250,23 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                               ),
                               GestureDetector(
                                 onTap: (){
-                                  showModalBottomSheet(
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        topRight: Radius.circular(16)
+                                  if(!isImported){
+                                    showModalBottomSheet(
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          topRight: Radius.circular(16)
+                                        )
+                                      ),
+                                      context: context,
+                                      constraints: getDialogConstraints(context),
+                                      isScrollControlled: true,
+                                      isDismissible: false,
+                                      builder: (context) => NewItemDialog(
+                                        addNewItem: createNewItemInList,
                                       )
-                                    ),
-                                    context: context,
-                                    constraints: getDialogConstraints(context),
-                                    isScrollControlled: true,
-                                    isDismissible: false,
-                                    builder: (context) => NewItemDialog(
-                                      addNewItem: createNewItemInList,
-                                    )
-                                  );
+                                    );
+                                  }
                                 },
                                 child: Icon(
                                   Icons.add,
@@ -247,14 +287,17 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                                 itemBuilder: (context, index){
                                   return TaskItem(
                                     task: items[index],
-                                    changeActive: () => changeActiveState(items[index]),
-                                    removeItem: () => deleteItemFromList(index),
+                                    changeActive: () => !isImported ?
+                                    changeActiveState(items[index]) : {},
+                                    removeItem: () => !isImported ?
+                                    deleteItemFromList(index) : {},
                                   );
                                 },
                               );
                             },
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(height: !isImported ? 32 : 16),
+                          if(!isImported)
                           SizedBox(
                             width: MediaQuery.of(context).size.width,
                             child: PlatformButton(

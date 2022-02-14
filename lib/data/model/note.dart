@@ -79,10 +79,14 @@ class Note{
       desc: json['desc'] as String?,
       category: json['category'] as String?,
       priority: json['priority'] as String?,
-      image: json['image'] as Uint8List?,
+      image: _getImageBinary(json['image'] as List<dynamic>),
       items: decodeItems(json['items']),
       date: json['date'] as int?,
     );
+  }
+
+  static Uint8List _getImageBinary(dynamicList) {
+    return Uint8List.fromList(dynamicList.cast<int>().toList());
   }
 }
 
@@ -110,10 +114,16 @@ class NoteItem extends StatelessWidget {
             isDismissible: false,
             builder: (context){
               if(note!.category! == "default"){
-                return CreateSimpleNoteDialog(note: note!);
+                return CreateSimpleNoteDialog(
+                  note: note!,
+                  isFromImport: false
+                );
               }
               else{
-                return CreateTaskNoteDialog(note: note!);
+                return CreateTaskNoteDialog(
+                  note: note!,
+                  isFromImport: false
+                );
               }
             }
           );

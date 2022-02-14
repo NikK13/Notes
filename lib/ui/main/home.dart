@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:notes/ui/main/backup.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -14,6 +18,7 @@ import 'package:notes/ui/widgets/loading.dart';
 import 'package:notes/ui/widgets/nodata.dart';
 import 'package:notes/ui/widgets/platform_textfield.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 late NotesBloc notesBloc;
 class HomePage extends StatefulWidget {
@@ -71,22 +76,12 @@ class _HomePageState extends State<HomePage> {
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: (){
-                            showModalBottomSheet(
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(16),
-                                  topRight: Radius.circular(16)
-                                )
-                              ),
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) => const NoteTypeDialog()
-                            );
+                          onTap: () async{
+                            AppNavigator.of(context).push(const BackUpNotes());
                           },
                           child: Icon(
-                            App.platform == "ios" ? CupertinoIcons.add_circled : Icons.add,
-                            size: App.platform == "ios" ? 32 : 38,
+                            CupertinoIcons.cloud_download,
+                            size: 31,
                             color: HexColor.fromHex(provider.color!),
                           ),
                         ),
@@ -109,15 +104,30 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                StatefulBuilder(
-                  builder: (_, setItem){
-                    _setSearchState = setItem;
-                    return PlatformTextField(
-                      controller: _searchController,
-                      showClear: _filter.isNotEmpty,
-                      hintText: AppLocalizations.of(context, 'typehint'),
-                    );
-                  },
+                Row(
+                  children: [
+                    Expanded(
+                      child: StatefulBuilder(
+                        builder: (_, setItem){
+                          _setSearchState = setItem;
+                          return PlatformTextField(
+                            controller: _searchController,
+                            showClear: _filter.isNotEmpty,
+                            hintText: AppLocalizations.of(context, 'typehint'),
+                            customSuffix: getNewButton(context, provider),
+                            color: HexColor.fromHex(provider.color!),
+                          );
+                        },
+                      ),
+                    ),
+                    if(App.platform == "ios")
+                    Row(
+                      children: [
+                        const SizedBox(width: 8),
+                        getNewButton(context, provider),
+                      ],
+                    )
+                  ],
                 ),
                 Expanded(
                   child: StreamBuilder(
@@ -172,6 +182,29 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         )
+      ),
+    );
+  }
+
+  Widget getNewButton(context, provider){
+    return GestureDetector(
+      onTap: (){
+        showModalBottomSheet(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16)
+            )
+          ),
+          context: context,
+          isScrollControlled: true,
+          builder: (context) => const NoteTypeDialog()
+        );
+      },
+      child: Icon(
+        App.platform == "ios" ? CupertinoIcons.add_circled : Icons.add,
+        size: App.platform == "ios" ? 34 : 38,
+        color: HexColor.fromHex(provider.color!),
       ),
     );
   }

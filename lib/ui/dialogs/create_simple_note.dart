@@ -4,7 +4,7 @@ import 'package:notes/data/model/note.dart';
 import 'package:notes/data/utils/app.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
-import 'package:notes/ui/dialogs/delete_note_dialog.dart';
+import 'package:notes/ui/dialogs/notes_menu_dialog.dart';
 import 'package:notes/ui/main/home.dart';
 import 'package:notes/ui/widgets/chips_list.dart';
 import 'package:notes/ui/widgets/platform_button.dart';
@@ -12,10 +12,12 @@ import 'package:notes/ui/widgets/platform_textfield.dart';
 
 class CreateSimpleNoteDialog extends StatefulWidget {
   final Note? note;
+  final bool? isFromImport;
 
   const CreateSimpleNoteDialog({
     Key? key,
-    this.note
+    this.note,
+    this.isFromImport
   }) : super(key: key);
 
   @override
@@ -27,6 +29,7 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
   final TextEditingController _descController = TextEditingController();
 
   Note get note => widget.note!;
+  bool get isImported => widget.isFromImport!;
 
   int _selectedIndex = 0;
 
@@ -70,15 +73,57 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            if(widget.note != null)
+                            getIconButton(
+                              child: Icon(
+                                App.platform == "ios" ?
+                                Icons.arrow_back_ios_rounded :
+                                Icons.arrow_back,
+                                size: 24,
+                                color: Colors.grey,
+                              ),
+                              context: context,
+                              onTap: () {
+                                Navigator.pop(context);
+                              }
+                            ),
+                            Text(
+                              AppLocalizations.of(context, 'simple_note'),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if(isImported && widget.note != null)
                             getIconButton(
                               child: const Icon(
-                                Icons.delete_outline_rounded,
+                                Icons.save,
                                 size: 24,
                                 color: Colors.grey,
                               ),
                               context: context,
                               onTap: () async{
+                                final newNote = Note(
+                                  title: note.title,
+                                  desc: note.desc,
+                                  category: note.category,
+                                  priority: note.priority,
+                                  image: note.image,
+                                  items: note.items,
+                                  date: note.date
+                                );
+                                await notesBloc.addItem(newNote);
+                                Navigator.pop(context);
+                              }
+                            ),
+                            if(!isImported && widget.note != null)
+                            getIconButton(
+                              child: const Icon(
+                                Icons.more_vert,
+                                size: 24,
+                                color: Colors.grey,
+                              ),
+                              context: context,
+                              onTap: (){
                                 showModalBottomSheet(
                                   shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.only(
@@ -90,35 +135,14 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
                                   constraints: getDialogConstraints(context),
                                   isScrollControlled: true,
                                   isDismissible: false,
-                                  builder: (ctx) => DeleteNoteDialog(
-                                    deleteNote: () async {
-                                      await notesBloc.deleteItemByID(widget.note!.id!);
-                                      Navigator.pop(context);
-                                    },
+                                  builder: (context) => NotesMenuDialog(
+                                    note: note,
                                   )
                                 );
                               }
                             ),
                             if(widget.note == null)
-                            const SizedBox(width: 40),
-                            Text(
-                              AppLocalizations.of(context, 'simple_note'),
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            getIconButton(
-                              child: const Icon(
-                                Icons.close,
-                                size: 24,
-                                color: Colors.grey,
-                              ),
-                              context: context,
-                              onTap: () {
-                                Navigator.pop(context);
-                              }
-                            ),
+                            const SizedBox(width: 40)
                           ],
                         ),
                         Column(
@@ -144,11 +168,13 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
                                         index: _selectedIndex,
                                         color: getColorByPriority(getPriorityByIndex(_selectedIndex)),
                                         func: (selected, index) {
-                                          _setIndexState!((){
-                                            if (selected) {
-                                              _selectedIndex = index;
-                                            }
-                                          });
+                                          if(!isImported){
+                                            _setIndexState!((){
+                                              if (selected) {
+                                                _selectedIndex = index;
+                                              }
+                                            });
+                                          }
                                         },
                                       ),
                                     );
@@ -170,7 +196,8 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
                               showClear: false,
                               isForNotes: true,
                               maxLines: 1,
-                              hintText: AppLocalizations.of(context, 'typehint')
+                              hintText: AppLocalizations.of(context, 'typehint'),
+                              enabled: !isImported,
                             ),
                             const SizedBox(height: 32),
                             Text(
@@ -190,8 +217,10 @@ class _CreateSimpleNoteDialogState extends State<CreateSimpleNoteDialog> {
                               hintText: AppLocalizations.of(context, 'typehint'),
                               isExpanded: false,
                               inputAction: TextInputAction.newline,
+                              enabled: !isImported,
                             ),
                             const SizedBox(height: 16),
+                            if(!isImported)
                             SizedBox(
                               width: MediaQuery.of(context).size.width,
                               child: PlatformButton(
