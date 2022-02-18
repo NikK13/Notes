@@ -15,7 +15,7 @@ class NotesBloc implements BaseBloc{
     getAllNotes();
   }
 
-  getAllNotes({String? query}) async {
+  Future getAllNotes({String? query}) async {
     await loadList(await (repository.getAllNotes(query: query)
     as Future<List<Note>?>));
   }
@@ -24,22 +24,22 @@ class NotesBloc implements BaseBloc{
     return await (repository.getAllNotes());
   }
 
-  addItem(Note item) async {
+  Future addItem(Note item) async {
     await repository.insertNote(item);
     await getAllNotes();
   }
 
-  updateItem(Note item) async {
+  Future updateItem(Note item) async {
     await repository.updateNote(item);
     await getAllNotes();
   }
 
-  deleteItemByID(int id) async {
+  Future deleteItemByID(int id) async {
     await repository.deleteNote(id);
     await getAllNotes();
   }
 
-  deleteAllItems() async {
+  Future deleteAllItems() async {
     await repository.deleteAllNotes();
     await getAllNotes();
   }

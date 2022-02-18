@@ -9,7 +9,7 @@ import 'package:notes/data/utils/localization.dart';
 import 'package:notes/ui/bloc/notes_bloc.dart';
 import 'package:notes/ui/provider/prefsprovider.dart';
 import 'package:notes/ui/widgets/appbar.dart';
-import 'package:notes/ui/widgets/settings_row.dart';
+import 'package:notes/ui/widgets/settings_ui.dart';
 import 'package:provider/provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -49,86 +49,82 @@ class _SettingsPageState extends State<SettingsPage> {
                   titleFontSize: 30,
                 ),
                 const SizedBox(height: 32),
-                SettingsTitle(
+                SettingsSection(
                   title: AppLocalizations.of(context, 'common'),
+                  settingsItems: [
+                    SettingsRow(
+                      title: AppLocalizations.of(context, 'changelang'),
+                      onTap: () => App.platform == "ios" ?
+                      showIosLangDialog(context, _provider) :
+                      showLangDialog(context, _provider),
+                      trailing: getTitle(context),
+                      icon: Icons.language_rounded,
+                      isFirst: true,
+                      isLast: false,
+                    ),
+                    SettingsRow(
+                      title: AppLocalizations.of(context, 'currenttheme'),
+                      onTap: () => App.platform == "ios" ?
+                      showIosThemesDialog(context, _provider) :
+                      showThemesDialog(context, _provider),
+                      trailing: _provider.getThemeTitle(context),
+                      icon: Icons.brightness_auto,
+                      isFirst: false,
+                      isLast: true,
+                    ),
+                  ]
                 ),
-                SettingsRow(
-                  title: AppLocalizations.of(context, 'changelang'),
-                  onTap: () => App.platform == "ios" ?
-                  showIosLangDialog(context, _provider) :
-                  showLangDialog(context, _provider),
-                  trailing: getTitle(context),
-                  icon: Icons.language_rounded,
-                ),
-                const SizedBox(height: 8),
-                SettingsRow(
-                  title: AppLocalizations.of(context, 'currenttheme'),
-                  onTap: () => App.platform == "ios" ?
-                  showIosThemesDialog(context, _provider) :
-                  showThemesDialog(context, _provider),
-                  trailing: _provider.getThemeTitle(context),
-                  icon: Icons.brightness_auto,
-                ),
-                const SizedBox(height: 40),
-                SettingsTitle(
+                SettingsSection(
                   title: AppLocalizations.of(context, 'appearance'),
-                ),
-                /*SettingsRow(
-                  title: AppLocalizations.of(context, 'labels'),
-                  onTap: () => changeLabelsValue(
-                    _provider,
-                    _provider.isLabels! ? false : true,
-                  ),
-                  icon: Icons.text_fields_rounded,
-                  switchData: CupertinoSwitch(
-                    activeColor: HexColor.fromHex(_provider.color!),
-                    value: _provider.isLabels!,
-                    onChanged: (bool value) => changeLabelsValue(_provider, value),
-                  ),
-                ),
-                const SizedBox(height: 8),*/
-                SettingsRow(
-                  title: AppLocalizations.of(context, 'appcolor'),
-                  onTap: () => showColorDialog(context, _provider),
-                  icon: Icons.color_lens,
-                  switchData: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ClipOval(
-                      child: Material(
-                        color: HexColor.fromHex(_provider.color!),
-                        child: const SizedBox(
-                          height: 30,
-                          width: 30,
+                  settingsItems: [
+                    SettingsRow(
+                      title: AppLocalizations.of(context, 'appcolor'),
+                      onTap: () => showColorDialog(context, _provider),
+                      icon: Icons.color_lens,
+                      switchData: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ClipOval(
+                          child: Material(
+                            color: HexColor.fromHex(_provider.color!),
+                            child: const SizedBox(
+                              height: 30,
+                              width: 30,
+                            ),
+                          ),
                         ),
                       ),
+                      isFirst: true,
+                      isLast: true,
                     ),
-                  ),
+                  ]
                 ),
-                const SizedBox(height: 32),
-                SettingsTitle(
+                SettingsSection(
                   title: AppLocalizations.of(context, 'app'),
+                  settingsItems: [
+                    SettingsRow(
+                      title: AppLocalizations.of(context, 'delete_all'),
+                      onTap: () async{
+                        await widget.notesBloc!.deleteAllItems();
+                        AppNavigator.of(context).pop();
+                      },
+                      icon: Icons.delete_outline,
+                      isFirst: true,
+                      isLast: false,
+                    ),
+                    SettingsRow(
+                      title: "${App.appName}, v 0.1.0",
+                      onTap: () {
+                        widget.reloadDesign!();
+                        AppNavigator.of(context).pop();
+                      },
+                      trailing: App.platform.capitalize(),
+                      icon: Icons.help_outline,
+                      isFirst: false,
+                      isLast: true,
+                    ),
+                  ]
                 ),
-                SettingsRow(
-                  title: "Clear database",
-                  onTap: () async{
-                    await widget.notesBloc!.deleteAllItems();
-                  },
-                  trailing: "Delete all saved notes",
-                  icon: Icons.delete_outline,
-                ),
-                const SizedBox(height: 8),
-                SettingsRow(
-                  title: "${App.appName}, v 0.1.0",
-                  onTap: () {
-                    if(kDebugMode){
-                      widget.reloadDesign!();
-                      AppNavigator.of(context).pop();
-                    }
-                  },
-                  trailing: App.platform.capitalize(),
-                  icon: Icons.help_outline,
-                ),
-                const SizedBox(height: 24),
+                //const SizedBox(height: 24),
               ],
             ),
           ),
@@ -337,102 +333,162 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   buildWidget(BuildContext context, provider) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        const SizedBox(height: 12),
-        ListTile(
-          leading: Icon(
-            Icons.brightness_high,
-            color: Theme.of(context).textTheme.bodyText1!.color,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12, vertical: 8
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          dialogLine,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(width: 40),
+              Text(
+                AppLocalizations.of(context, 'currenttheme'),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              getIconButton(
+                child: const Icon(
+                  Icons.close,
+                  size: 24,
+                  color: Colors.grey,
+                ),
+                context: context,
+                onTap: () {
+                  Navigator.pop(context);
+                }
+              ),
+            ],
           ),
-          title: Text(
-            AppLocalizations.of(context, 'lighttheme'),
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 18
+          const SizedBox(height: 12),
+          ListTile(
+            leading: Icon(
+              Icons.brightness_high,
+              color: Theme.of(context).textTheme.bodyText1!.color,
             ),
-          ),
-          onTap: () async {
-            Navigator.pop(context);
-            provider.savePreference('mode', 'light');
-          },
-        ),
-        ListTile(
-          leading: Icon(
-            Icons.brightness_4,
-            color: Theme.of(context).textTheme.bodyText1!.color,
-          ),
-          title: Text(
-            AppLocalizations.of(context, 'darktheme'),
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 18
+            title: Text(
+              AppLocalizations.of(context, 'lighttheme'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 18
+              ),
             ),
+            onTap: () async {
+              Navigator.pop(context);
+              provider.savePreference('mode', 'light');
+            },
           ),
-          onTap: () async {
-            Navigator.pop(context);
-            provider.savePreference('mode', 'dark');
-          },
-        ),
-        ListTile(
-          leading: Icon(
-            Icons.phone_iphone,
-            color: Theme.of(context).textTheme.bodyText1!.color,
-          ),
-          title: Text(
-            AppLocalizations.of(context, 'systemtheme'),
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 18
+          ListTile(
+            leading: Icon(
+              Icons.brightness_4,
+              color: Theme.of(context).textTheme.bodyText1!.color,
             ),
+            title: Text(
+              AppLocalizations.of(context, 'darktheme'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 18
+              ),
+            ),
+            onTap: () async {
+              Navigator.pop(context);
+              provider.savePreference('mode', 'dark');
+            },
           ),
-          onTap: () async {
-            Navigator.pop(context);
-            provider.savePreference('mode', 'system');
-          },
-        )
-      ],
+          ListTile(
+            leading: Icon(
+              Icons.phone_iphone,
+              color: Theme.of(context).textTheme.bodyText1!.color,
+            ),
+            title: Text(
+              AppLocalizations.of(context, 'systemtheme'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 18
+              ),
+            ),
+            onTap: () async {
+              Navigator.pop(context);
+              provider.savePreference('mode', 'system');
+            },
+          )
+        ],
+      ),
     );
   }
 
   buildLangWidget(BuildContext context, provider) =>
-      Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          const SizedBox(height: 12),
-          ListTile(
-            leading: const Text(
-              'EN',
-              style: TextStyle(fontSize: 18),
+      Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12, vertical: 8
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            dialogLine,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(width: 40),
+                Text(
+                  AppLocalizations.of(context, 'changelang'),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                getIconButton(
+                  child: const Icon(
+                    Icons.close,
+                    size: 24,
+                    color: Colors.grey,
+                  ),
+                  context: context,
+                  onTap: () {
+                    Navigator.pop(context);
+                  }
+                ),
+              ],
             ),
-            title: const Text(
-              'English',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18
+            const SizedBox(height: 12),
+            ListTile(
+              leading: const Text(
+                'EN',
+                style: TextStyle(fontSize: 18),
               ),
-            ),
-            onTap: () async {
-              Navigator.pop(context);
-              provider.savePreference('language', 'en');
-            },
-          ),
-          ListTile(
-            leading: const Text('RU', style: TextStyle(fontSize: 18)),
-            title: const Text(
-              'Русский',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18
+              title: const Text(
+                'English',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18
+                ),
               ),
+              onTap: () async {
+                Navigator.pop(context);
+                provider.savePreference('language', 'en');
+              },
             ),
-            onTap: () async {
-              Navigator.pop(context);
-              provider.savePreference('language', 'ru');
-            },
-          ),
-        ],
+            ListTile(
+              leading: const Text('RU', style: TextStyle(fontSize: 18)),
+              title: const Text(
+                'Русский',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18
+                ),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                provider.savePreference('language', 'ru');
+              },
+            ),
+          ],
+        ),
       );
 }
 

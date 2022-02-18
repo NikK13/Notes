@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:notes/data/model/note.dart';
 import 'package:notes/data/utils/app.dart';
+import 'package:notes/data/utils/appnavigator.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
 import 'package:notes/ui/dialogs/create_simple_note.dart';
@@ -73,15 +74,15 @@ class _BackUpNotesState extends State<BackUpNotes> {
                           if(file.extension!.contains("notes")){
                             final stringFile = File(file.path!).readAsStringSync();
                             final decoded = json.decode(stringFile)['notes'];
-                            for(int i = 0; i < decoded.length; i++){
-                              final note = Note.fromJson(decoded[i]);
-                              await notesBloc.addItem(note);
-                            }
-                            result = null;
+                            await notesBloc.deleteAllItems().then((value){
+                              for(int i = 0; i < decoded.length; i++){
+                                final note = Note.fromJson(decoded[i]);
+                                notesBloc.addItem(note);
+                              }
+                              result = null;
+                              AppNavigator.of(context).pop();
+                            });
                           }
-                        }
-                        else {
-                          // User canceled the picker
                         }
                       },
                       style: TextButton.styleFrom(

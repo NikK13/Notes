@@ -77,7 +77,6 @@ class NotesMenuDialog extends StatelessWidget {
                         builder: (context) => DeleteNoteDialog(
                           deleteNote: () async{
                             await notesBloc.deleteItemByID(note!.id!);
-                            Navigator.pop(context);
                           },
                         )
                       );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:notes/data/utils/app.dart';
 import 'package:notes/data/utils/appnavigator.dart';
+import 'package:notes/data/utils/localization.dart';
 import 'package:notes/ui/main/home.dart';
 import 'package:notes/ui/main/onboard.dart';
 import 'package:notes/ui/provider/prefsprovider.dart';
@@ -10,6 +11,7 @@ import 'package:provider/provider.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await AppLocalizations.loadLanguages();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -45,7 +47,7 @@ class Application extends StatelessWidget {
           theme: App.themeLight,
           darkTheme: App.themeDark,
           builder: (context, child){
-            return provider.currentTheme != null ? AppNavigator(
+            return provider.isFirst != null ? AppNavigator(
               navigatorKey: _navigatorKey,
               initialPages: const [
                 MaterialPage(child: InitializePage())

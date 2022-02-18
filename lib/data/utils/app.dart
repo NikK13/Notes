@@ -10,7 +10,7 @@ class App {
   static String platform = defaultTargetPlatform.name;
   static const Color colorDark = Color(0xFF212121);
   static const Color colorLight = Color(0xFFFFFFFF);
-  static const String defColor = "3164FF";
+  static const String defColor = "6C63FF";
   static const String font = "Manrope";
 
   static final Iterable<LocalizationsDelegate<dynamic>> delegates = [

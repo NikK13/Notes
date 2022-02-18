@@ -1,7 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
+import 'package:flutter/rendering.dart';
 import 'package:notes/ui/main/backup.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -18,7 +16,6 @@ import 'package:notes/ui/widgets/loading.dart';
 import 'package:notes/ui/widgets/nodata.dart';
 import 'package:notes/ui/widgets/platform_textfield.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 late NotesBloc notesBloc;
 class HomePage extends StatefulWidget {
@@ -31,9 +28,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _searchController = TextEditingController();
 
-  void Function(void Function())? _setSearchState, _setListState;
+  void Function(void Function())? _setSearchState, _setListState, _setFabState;
 
   String _filter = '';
+  bool _isFabExpanded = true;
+
+  List<Note>? notes;
 
   @override
   void initState() {
@@ -55,130 +55,186 @@ class _HomePageState extends State<HomePage> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
+        floatingActionButtonLocation: App.platform == "ios" ?
+        FloatingActionButtonLocation.centerFloat :
+        FloatingActionButtonLocation.endFloat,
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(
+            bottom: 12
+          ),
+          child: App.platform == "ios" ? FloatingActionButton(
+            onPressed: () => _openNewNoteDialog(context),
+            backgroundColor: HexColor.fromHex(provider.color!),
+            child: const Icon(
+              Icons.add,
+              color: Colors.white,
+              size: 28,
+            ),
+          ) : StatefulBuilder(
+            builder: (_, setItem){
+              _setFabState = setItem;
+              return FloatingActionButton.extended(
+                onPressed: () => _openNewNoteDialog(context),
+                isExtended: _isFabExpanded,
+                backgroundColor: HexColor.fromHex(provider.color!),
+                label: _isFabExpanded ? Row(
+                  children: [
+                    const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    Row(
+                      children: [
+                        const SizedBox(width: 6),
+                        Text(
+                          AppLocalizations.of(context, 'create'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ) : const SizedBox(),
+                icon: !_isFabExpanded ? const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 28,
+                ) : null,
+              );
+            },
+          )
+        ),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.only(
               left: 20, right: 20,
               top: 28, bottom: 16
             ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context, 'notes'),
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () async{
-                            AppNavigator.of(context).push(const BackUpNotes());
-                          },
-                          child: Icon(
-                            CupertinoIcons.cloud_download,
-                            size: 31,
-                            color: HexColor.fromHex(provider.color!),
-                          ),
-                        ),
-                        const SizedBox(width: 18),
-                        GestureDetector(
-                          onTap: (){
-                            AppNavigator.of(context).push(SettingsPage(
-                              reloadDesign: _reloadDesign,
-                              notesBloc: notesBloc,
-                            ));
-                          },
-                          child: Icon(
-                            CupertinoIcons.settings,
-                            size: 30,
-                            color: HexColor.fromHex(provider.color!),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: StatefulBuilder(
-                        builder: (_, setItem){
-                          _setSearchState = setItem;
-                          return PlatformTextField(
-                            controller: _searchController,
-                            showClear: _filter.isNotEmpty,
-                            hintText: AppLocalizations.of(context, 'typehint'),
-                            customSuffix: getNewButton(context, provider),
-                            color: HexColor.fromHex(provider.color!),
-                          );
-                        },
-                      ),
-                    ),
-                    if(App.platform == "ios")
-                    Row(
-                      children: [
-                        const SizedBox(width: 8),
-                        getNewButton(context, provider),
-                      ],
-                    )
-                  ],
-                ),
-                Expanded(
-                  child: StreamBuilder(
-                    stream: notesBloc.listStream,
-                    builder: (context, AsyncSnapshot<List<Note>?> snapshot) {
-                      //debugPrint("${snapshot.data}");
-                      if(snapshot.connectionState == ConnectionState.active){
-                        if(snapshot.hasData){
-                          if(snapshot.data!.isNotEmpty){
-                            final list = snapshot.data;
-                            list!.sort((a,b){
-                              return b.date!.compareTo(a.date!);
-                            });
-                            return Column(
-                              children: [
-                                const SizedBox(height: 24),
-                                Expanded(
-                                  child: StatefulBuilder(
-                                    builder: (_, setItem){
-                                      _setListState = setItem;
-                                      return StaggeredGridView.countBuilder(
-                                        physics: App.platform == "ios" ?
-                                        const BouncingScrollPhysics() :
-                                        const AlwaysScrollableScrollPhysics(),
-                                        crossAxisCount: 2,
-                                        itemCount: getSearchList(list).length,
-                                        shrinkWrap: true,
-                                        itemBuilder: (BuildContext context, int index) {
-                                          final item = getSearchList(list)[index];
-                                          return NoteItem(note: item);
-                                        },
-                                        staggeredTileBuilder: (int index) => StaggeredTile.count(
-                                          (index + 1) % 3 == 0 ? 2 : 1, 1
-                                        ),
-                                        crossAxisSpacing: 12.0, mainAxisSpacing: 12.0,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
-                          return const NoDataPage();
-                        }
-                        return const NoDataPage();
+            child: StreamBuilder(
+              stream: notesBloc.listStream,
+              builder: (context, AsyncSnapshot<List<Note>?> snapshot) {
+                //debugPrint("_____NOTES STREAM BUILD_____");
+                if(snapshot.hasData){
+                  snapshot.data!.sort((a,b){
+                    return b.date!.compareTo(a.date!);
+                  });
+                }
+                return NotificationListener<UserScrollNotification>(
+                  onNotification: (notification){
+                    if(App.platform == "android"){
+                      if(notification.direction == ScrollDirection.forward){
+                        _setFabState!(() => _isFabExpanded = true);
                       }
-                      return Center(child: LoadingView(color: HexColor.fromHex(provider.color!)));
+                      else if(notification.direction == ScrollDirection.reverse){
+                        _setFabState!(() => _isFabExpanded = false);
+                      }
                     }
+                    return true;
+                  },
+                  child: SingleChildScrollView(
+                    physics: App.platform == "ios" ?
+                    const BouncingScrollPhysics() :
+                    const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: (snapshot.hasData) ?
+                        (snapshot.data!.isNotEmpty) ?
+                        double.infinity : MediaQuery.of(context).size.height - 100 :
+                        MediaQuery.of(context).size.height - 100
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                AppLocalizations.of(context, 'notes'),
+                                style: const TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w700
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async{
+                                      AppNavigator.of(context).push(const BackUpNotes());
+                                    },
+                                    child: Icon(
+                                      CupertinoIcons.cloud_download,
+                                      size: 31,
+                                      color: HexColor.fromHex(provider.color!),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 18),
+                                  GestureDetector(
+                                    onTap: (){
+                                      AppNavigator.of(context).push(SettingsPage(
+                                        reloadDesign: _reloadDesign,
+                                        notesBloc: notesBloc,
+                                      ));
+                                    },
+                                    child: Icon(
+                                      CupertinoIcons.settings,
+                                      size: 30,
+                                      color: HexColor.fromHex(provider.color!),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          StatefulBuilder(
+                            builder: (_, setItem){
+                              _setSearchState = setItem;
+                              return PlatformTextField(
+                                controller: _searchController,
+                                showClear: _filter.isNotEmpty,
+                                enabled: (snapshot.hasData && snapshot.data!.isNotEmpty),
+                                hintText: AppLocalizations.of(context, 'typehint'),
+                              );
+                            },
+                          ),
+                          (snapshot.hasData) ? (snapshot.data!.isNotEmpty) ? Column(
+                            children: [
+                              const SizedBox(height: 24),
+                              StatefulBuilder(
+                                builder: (_, setItem){
+                                  _setListState = setItem;
+                                  return StaggeredGridView.countBuilder(
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    crossAxisCount: 2,
+                                    itemCount: _getSearchList(snapshot.data!).length,
+                                    shrinkWrap: true,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      final item = _getSearchList(snapshot.data!)[index];
+                                      return NoteItem(note: item);
+                                    },
+                                    staggeredTileBuilder: (int index) => StaggeredTile.count(
+                                        1, (index) % 2 == 0 ? 1.3 : 1
+                                    ),
+                                    crossAxisSpacing: 12.0, mainAxisSpacing: 12.0,
+                                  );
+                                },
+                              ),
+                            ],
+                          ) : const Expanded(
+                            child: NoDataPage()
+                          ) :
+                          Expanded(
+                            child: Center(
+                              child: LoadingView(color: HexColor.fromHex(provider.color!))
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
-                )
-              ],
+                );
+              }
             ),
           ),
         )
@@ -186,30 +242,21 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget getNewButton(context, provider){
-    return GestureDetector(
-      onTap: (){
-        showModalBottomSheet(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16)
-            )
-          ),
-          context: context,
-          isScrollControlled: true,
-          builder: (context) => const NoteTypeDialog()
-        );
-      },
-      child: Icon(
-        App.platform == "ios" ? CupertinoIcons.add_circled : Icons.add,
-        size: App.platform == "ios" ? 34 : 38,
-        color: HexColor.fromHex(provider.color!),
+  void _openNewNoteDialog(BuildContext context){
+    showModalBottomSheet(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16)
+        )
       ),
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const NoteTypeDialog()
     );
   }
 
-  List<Note> getSearchList(List<Note> currentList){
+  List<Note> _getSearchList(List<Note> currentList){
     return _filter.isEmpty ? currentList :
       currentList.where((element) => element.title!.contains(_filter)).toList();
   }

@@ -13,7 +13,7 @@ class NoDataPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<PreferenceProvider>(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 55),
+      padding: const EdgeInsets.only(bottom: 0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

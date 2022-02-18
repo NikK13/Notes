@@ -9,11 +9,9 @@ class AppLocalizations {
   static Map<String, String>? jsonEn;
   static Map<String, String>? jsonRu;
 
-  AppLocalizations(this.locale) {
-    loadLanguages();
-  }
+  AppLocalizations(this.locale);
 
-  Future loadLanguages() async{
+  static Future loadLanguages() async{
     if(jsonEn == null || jsonRu == null){
       debugPrint("Loading language configs...");
       jsonEn = Map<String, String>.from(json.decode(await rootBundle.loadString('lib/data/lang/en.json')));
@@ -22,7 +20,6 @@ class AppLocalizations {
   }
 
   static LocalizationsDelegate<AppLocalizations> delegate = AppLocalizationsDelegate();
-
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': jsonEn!,

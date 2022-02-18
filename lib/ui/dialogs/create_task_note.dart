@@ -4,7 +4,6 @@ import 'package:notes/data/model/note.dart';
 import 'package:notes/data/utils/app.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
-import 'package:notes/ui/dialogs/delete_note_dialog.dart';
 import 'package:notes/ui/dialogs/new_item_dialog.dart';
 import 'package:notes/ui/dialogs/notes_menu_dialog.dart';
 import 'package:notes/ui/main/home.dart';
@@ -12,7 +11,7 @@ import 'package:notes/ui/provider/prefsprovider.dart';
 import 'package:notes/ui/widgets/chips_list.dart';
 import 'package:notes/ui/widgets/platform_button.dart';
 import 'package:notes/ui/widgets/platform_textfield.dart';
-import 'package:notes/ui/widgets/selected_checkbox.dart';
+import 'package:notes/ui/widgets/task_item.dart';
 import 'package:provider/provider.dart';
 
 class CreateTaskNoteDialog extends StatefulWidget {
@@ -110,17 +109,7 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
                               color: Colors.grey,
                             ),
                             context: context,
-                            onTap: () async{
-                              final newNote = Note(
-                                title: note.title,
-                                desc: note.desc,
-                                category: note.category,
-                                priority: note.priority,
-                                image: note.image,
-                                items: note.items,
-                                date: note.date
-                              );
-                              await notesBloc.addItem(newNote);
+                            onTap: (){
                               Navigator.pop(context);
                             }
                           ),
@@ -360,9 +349,9 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
       Navigator.pop(context);
     }
     else{
-      items.forEach((element) {
+      for (var element in items) {
         debugPrint("${element.title}, ${element.isDone}");
-      });
+      }
     }
   }
 
@@ -373,76 +362,4 @@ class _CreateTaskNoteDialogState extends State<CreateTaskNoteDialog> {
   }
 }
 
-class TaskItem extends StatelessWidget {
-  final Item? task;
-  final Function? changeActive;
-  final Function? removeItem;
 
-  const TaskItem({
-    Key? key,
-    this.task,
-    this.changeActive,
-    this.removeItem,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Theme.of(context).brightness == Brightness.light ?
-            Colors.black : Colors.white,
-            width: 0.7
-          )
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              SelectedCheckBox(
-                isSelected: task!.isDone,
-                onTap: () => changeActive!(),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      task!.title!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if(task!.desc!.trim().isNotEmpty)
-                    Text(
-                      task!.desc!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 4),
-              getIconButton(
-                child: const Icon(
-                  Icons.delete_outline_rounded,
-                  size: 24,
-                  color: Colors.grey,
-                ),
-                context: context,
-                onTap: () => removeItem!()
-              ),
-              const SizedBox(width: 2),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

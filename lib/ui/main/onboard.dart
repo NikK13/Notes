@@ -90,7 +90,6 @@ class OnBoardScreen extends StatelessWidget {
                 top: 8,
               ),
               child: PlatformButton(
-                fontSize: 24,
                 text: AppLocalizations.of(context, 'start'),
                 onPressed: () async {
                   await proceedToApp(context, provider);

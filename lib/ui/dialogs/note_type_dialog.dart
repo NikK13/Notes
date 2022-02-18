@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:notes/data/utils/appnavigator.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/data/utils/localization.dart';
-import 'package:notes/ui/dialogs/create_simple_note.dart';
-import 'package:notes/ui/dialogs/create_task_note.dart';
+import 'package:notes/ui/notes/simple_note_screen.dart';
+import 'package:notes/ui/notes/tasks_note_screen.dart';
 import 'package:notes/ui/widgets/ripple.dart';
 
 class NoteTypeDialog extends StatelessWidget {
@@ -51,21 +52,7 @@ class NoteTypeDialog extends StatelessWidget {
                     title: " ${AppLocalizations.of(context, 'simple_note')}",
                     onTap: (){
                       Navigator.pop(context);
-                      showModalBottomSheet(
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16)
-                          )
-                        ),
-                        context: context,
-                        constraints: getDialogConstraints(context),
-                        isScrollControlled: true,
-                        isDismissible: false,
-                        builder: (context) => const CreateSimpleNoteDialog(
-                          isFromImport: false,
-                        )
-                      );
+                      AppNavigator.of(context).push(const SimpleNoteScreen());
                     },
                   ),
                   NewNoteItem(
@@ -73,41 +60,7 @@ class NoteTypeDialog extends StatelessWidget {
                     title: " ${AppLocalizations.of(context, 'task_note')}",
                     onTap: (){
                       Navigator.pop(context);
-                      showModalBottomSheet(
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16)
-                          )
-                        ),
-                        context: context,
-                        constraints: getDialogConstraints(context),
-                        isScrollControlled: true,
-                        isDismissible: false,
-                        builder: (context) => const CreateTaskNoteDialog(
-                          isFromImport: false,
-                        )
-                      );
-                      /*showModalBottomSheet(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        isScrollControlled: true,
-                        isDismissible: true,
-                        context: context,
-                        builder: (context) => DraggableScrollableSheet(
-                          initialChildSize: 0.75,
-                          minChildSize: 0.5,
-                          maxChildSize: 0.95,
-                          expand: false,
-                          snap: true,
-                          builder: (context, scrollController) {
-                            return CreateTaskNoteDialog(
-                              controller: scrollController,
-                            );
-                          },
-                        ),
-                      );*/
+                      AppNavigator.of(context).push(const TasksNoteScreen());
                     },
                   ),
                   /*NewNoteItem(

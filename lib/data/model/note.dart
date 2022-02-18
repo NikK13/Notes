@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:notes/data/utils/extensions.dart';
 import 'package:notes/ui/dialogs/create_simple_note.dart';
 import 'package:notes/ui/dialogs/create_task_note.dart';
+import 'package:notes/ui/dialogs/notes_menu_dialog.dart';
+import 'package:notes/ui/notes/simple_note_screen.dart';
+import 'package:notes/ui/notes/tasks_note_screen.dart';
 import 'package:notes/ui/widgets/ripple.dart';
 import 'package:notes/ui/widgets/selected_checkbox.dart';
 
@@ -101,6 +105,16 @@ class NoteItem extends StatelessWidget {
       tag: note!,
       child: Ripple(
         onTap: (){
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => note!.category! == "default" ?
+              SimpleNoteScreen(note: note) : TasksNoteScreen(note: note),
+              transitionDuration: const Duration(milliseconds: 250),
+            ),
+          );
+        },
+        onLongPress: (){
           showModalBottomSheet(
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
@@ -108,24 +122,13 @@ class NoteItem extends StatelessWidget {
                 topRight: Radius.circular(16)
               )
             ),
-            constraints: getDialogConstraints(context),
             context: context,
-            isScrollControlled: true,
-            isDismissible: false,
-            builder: (context){
-              if(note!.category! == "default"){
-                return CreateSimpleNoteDialog(
-                  note: note!,
-                  isFromImport: false
-                );
-              }
-              else{
-                return CreateTaskNoteDialog(
-                  note: note!,
-                  isFromImport: false
-                );
-              }
-            }
+            constraints: getDialogConstraints(context),
+            isScrollControlled: false,
+            isDismissible: true,
+            builder: (context) => NotesMenuDialog(
+              note: note,
+            )
           );
         },
         radius: 16,
@@ -185,7 +188,7 @@ class NoteItem extends StatelessWidget {
                 if(note!.category! == "tasks")
                 Expanded(
                   child: ListView(
-                    //physics: const NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     children: note!.items!.asMap().map((index, value){
                       final item = note!.items![index];
                       return MapEntry(index, getTaskView(item));

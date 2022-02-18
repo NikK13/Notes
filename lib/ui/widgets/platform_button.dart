@@ -10,6 +10,7 @@ class PlatformButton extends StatelessWidget {
   final double fontSize;
   final Function()? onPressed;
   final Function? onLongPress;
+  final double borderRadius;
 
   const PlatformButton({
     Key? key,
@@ -17,6 +18,7 @@ class PlatformButton extends StatelessWidget {
     this.fontSize = 18,
     @required this.onPressed,
     this.onLongPress,
+    this.borderRadius = 8
   }) : super(key: key);
 
   @override
@@ -35,7 +37,7 @@ class PlatformButton extends StatelessWidget {
               text!,
               style: TextStyle(
                 fontSize: fontSize,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w600,
                 fontFamily: App.font,
                 color: Colors.white,
               ),
@@ -55,7 +57,7 @@ class PlatformButton extends StatelessWidget {
           fontFamily: App.font,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(borderRadius),
         )
       ),
       child: SizedBox(

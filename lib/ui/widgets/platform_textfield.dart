@@ -5,7 +5,6 @@ import '../../data/utils/app.dart';
 class PlatformTextField extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType inputType;
-  final TextInputAction inputAction;
   final bool showClear;
   final bool isExpanded;
   final int? maxLines;
@@ -13,20 +12,18 @@ class PlatformTextField extends StatelessWidget {
   final String? hintText;
   final bool? enabled;
   final bool? isForNotes;
-  final Widget? customSuffix;
-  final Color? color;
+  final TextInputAction inputAction;
 
   const PlatformTextField({
     Key? key,
     required this.controller,
     required this.showClear,
-    this.hintText, this.color,
+    this.hintText,
     this.maxLines, this.minLines,
     this.inputType = TextInputType.name,
-    this.inputAction = TextInputAction.done,
     this.isExpanded = false, this.enabled,
     this.isForNotes = false,
-    this.customSuffix
+    this.inputAction = TextInputAction.done
   }) : super(key: key);
 
   @override
@@ -49,37 +46,16 @@ class PlatformTextField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           isDense: true,
-          suffixIcon: customSuffix != null ?
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-              showClear ? GestureDetector(
-                child: Icon(
-                  CupertinoIcons.clear,
-                  color: color ?? Colors.black,
-                  size: 30,
-                ),
-                onTap: (){
-                  controller.clear();
-                  FocusScope.of(context).unfocus();
-                },
-              ) : const SizedBox(),
-              const SizedBox(width: 6),
-              customSuffix!
-            ]),
-          ) : (showClear ? GestureDetector(
+          suffixIcon: showClear ? GestureDetector(
             child: const Icon(
-              CupertinoIcons.clear,
-              color: Colors.black
+                CupertinoIcons.clear,
+                color: Colors.black
             ),
             onTap: (){
               controller.clear();
               FocusScope.of(context).unfocus();
             },
-          ) : const SizedBox()),
+          ) : const SizedBox(),
           hintStyle: const TextStyle(
             fontWeight: FontWeight.w400,
             color: Colors.grey,
@@ -141,9 +117,9 @@ class PlatformTextField extends StatelessWidget {
       controller: controller,
       placeholder: hintText,
       placeholderStyle: const TextStyle(
-        fontWeight: FontWeight.w400,
-        color: Colors.grey,
-        fontFamily: App.font
+          fontWeight: FontWeight.w400,
+          color: Colors.grey,
+          fontFamily: App.font
       ),
       decoration: BoxDecoration(
         border: Border.all(
